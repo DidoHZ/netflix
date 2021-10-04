@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:netflix/screen/profilemainscreen.dart';
+import 'package:netflix/screen/videoinfo.dart';
 
 class Poster extends StatefulWidget {
   Poster({
@@ -102,7 +102,7 @@ class _PosterState extends State<Poster> {
                         Row(
                           children: [
                             IconButton(onPressed: (){
-                              Navigator.pushNamed(context, ProfileMainScreen.rout);},
+                              Navigator.pushNamed(context, VideoInfo.rout);},
                                 icon: Icon(Icons.info_outline_rounded,color: Colors.white,size: 30,)),
                             Text("Episodes&Info"),
                           ],

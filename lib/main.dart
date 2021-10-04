@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:netflix/screen/home_screen.dart';
-import 'package:netflix/screen/profilemainscreen.dart';
+import 'package:netflix/screen/videoinfo.dart';
 import 'package:netflix/screen/signin_screen.dart';
 
 
@@ -50,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
       routes: {
         ScreenHome.rout : (context) => ScreenHome(),
         SignInScreen.rout : (context) => SignInScreen(),
-        ProfileMainScreen.rout : (context) => ProfileMainScreen(),
+        VideoInfo.rout : (context) => VideoInfo(),
 
       },
     );

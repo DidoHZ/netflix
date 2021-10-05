@@ -12,84 +12,41 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  final _isVisivleNotifier = ValueNotifier<bool>(false),_listNotifier = ValueNotifier<int>(4);
   ScrollController sc = ScrollController();
-  double scrolled = 0, appbaropacity = 0, lastscroll = 0;
+  bool isVisible = false;
   int _index = 0;
-  late Size size;
-
+  
   @override
   void initState() {
-    sc = ScrollController();
     sc.addListener(() {
-      if (sc.position.pixels == sc.position.maxScrollExtent && i < cat.length) {
-        setState(() {
-          i += 4;
-        });
+      if (sc.position.pixels == sc.position.maxScrollExtent && _listNotifier.value < cat.length) {
+        increase();
       }
-
-      double firstH = size.height * 0.075;
-
-      if (sc.position.userScrollDirection == ScrollDirection.reverse &&
-          scrolled < firstH) {
-        // Handle scroll Down
-        setState(() {
-          scrolled =
-              min(scrolled + max(sc.position.pixels - lastscroll, 1), firstH);
-          appbaropacity =
-              sc.position.pixels <= firstH ? (scrolled * 0.75) / firstH : 0.75;
-        });
-      } else if (sc.position.userScrollDirection == ScrollDirection.forward &&
-          (scrolled != 0 || sc.position.pixels <= firstH)) {
-        // Handle scroll up.
-        setState(() {
-          scrolled = max(scrolled - max(lastscroll - sc.position.pixels, 0), 0);
-          appbaropacity = sc.position.pixels <= size.height * 0.075
-              ? (min(sc.position.pixels, firstH) * 0.75) / firstH
-              : 0.75;
-        });
-      }
-
-      lastscroll = sc.position.pixels;
-    });
-    super.initState();
-  }
-
-  List<String> cat = [
-    "Home",
-    "My List",
-    "Action",
-    "Anime",
-    "Dramas",
-    "Sci-fi",
-    "Stand-Up",
-    "Fantasy",
-    "Mafia",
-    "Horror",
-    "Halloween",
-    "Music & Musicals",
-    "Reality",
-    "Romance",
-    "Halloween",
-    "Music & Musicals",
-    "Crime",
-    "Anime",
-    "Dramas",
-    "Stand-Up",
-    "Comedies",
-    "Fantasy"
-  ];
-  bool isVisible = false;
-  void showToast() {
-    setState(() {
-      isVisible = !isVisible;
     });
   }
 
-  int i = 4;
+  List<String> cat = ["Home","My List","Action","Anime","Dramas","Sci-fi","Stand-Up","Fantasy","Mafia","Horror","Halloween","Music & Musicals","Reality","Romance","Halloween","Music & Musicals","Crime","Anime","Dramas","Stand-Up","Comedies","Fantasy"];
+  
+  void _onPressed() {
+    _isVisivleNotifier.value = !_isVisivleNotifier.value;
+  }
+  
+  void increase() {
+    _listNotifier.value += 4;
+  }
 
   @override
+  void dispose() {
+    _isVisivleNotifier.dispose();
+    _listNotifier.dispose();
+    super.dispose();
+  }
+  
+  @override
   Widget build(BuildContext context) {
-    size = MediaQuery.of(context).size;
+    print("main rebuild");
+    Size size = MediaQuery.of(context).size;
     return Stack(children: [
       Scaffold(
         backgroundColor: Colors.black,
@@ -102,20 +59,147 @@ class _MainScreenState extends State<MainScreen> {
               height: size.height + MediaQuery.of(context).padding.top,
               width: size.width,
               top: MediaQuery.of(context).padding.top * -1,
-              child: ListView.builder(
-                itemCount: min(i, cat.length + 1),
+              child: ValueListenableBuilder<int>(
+              valueListenable: _listNotifier,
+              builder: (_, value, __) => ListView.builder(
+                itemCount: min(value, cat.length + 1),
+                addAutomaticKeepAlives: true,
                 itemBuilder: (context, index) {
                   if (index == 0)
-                    return MainView(size: size);
+                    return const MainView();
                   else
                     return CustLisView(name: cat[index - 1]);
                 },
                 controller: sc,
               ),
+             ),
             ),
+            AppBar(sc:sc,myfunc:_onPressed)
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.black,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey,
+          currentIndex: _index,
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.home_filled,
+                ),
+                label: "Home"),
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.video_collection_outlined,
+                ),
+                label: "Comming Soon"),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.arrow_circle_down_outlined,
+              ),
+              label: "Downloads",
+            )
+          ],
+          onTap: (index) {
+            setState(() => _index = index);
+          },
+        ),
+      ),
+      ValueListenableBuilder<bool>(
+              valueListenable: _isVisivleNotifier,
+              builder: (_, value, __) => Visibility(
+        visible: value,
+        child: Container(
+            margin: const EdgeInsets.all(0),
+            child: ListView(
+                children: List.generate(
+                    cat.length,
+                    (index) => TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          cat[index],
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 20),
+                        )))),
+            decoration: BoxDecoration(
+              color: const Color(0x00000000)
+                  .withOpacity(0.8), //here i want to add opacity
+            )),
+      		),
+            ),
+      ValueListenableBuilder<bool>(
+              valueListenable: _isVisivleNotifier,
+              builder: (_, value, __) => Visibility(
+        visible: value,
+        child: Padding(
+          padding: EdgeInsets.only(top: size.height * .9),
+          child: Center(
+            child: FloatingActionButton(
+              onPressed: _onPressed,
+              child: const Icon(
+                Icons.clear,
+                color: Colors.black,
+              ),
+              backgroundColor: Colors.white,
+            ),
+          ),
+        ),
+      )
+            ),
+    ]);
+  }
+}
 
-            //My App bar
-            Positioned(
+class AppBar extends StatefulWidget {
+  ScrollController sc;
+  final VoidCallback myfunc;
+  AppBar({Key? key,required this.sc,required this.myfunc}) : super(key: key);
+  
+    _AppBarState createState() => _AppBarState();
+}
+
+class _AppBarState extends State<AppBar> {
+  double scrolled = 0, appbaropacity = 0, lastscroll = 0;
+  late Size size;
+  
+  @override
+  void initState() {
+    
+    widget.sc.addListener(() {
+
+      double firstH = size.height * 0.075;
+
+      if (widget.sc.position.userScrollDirection == ScrollDirection.reverse &&
+          scrolled < firstH) {
+        // Handle scroll Down
+        setState(() {
+          scrolled =
+              min(scrolled + max(widget.sc.position.pixels - lastscroll, 1), firstH);
+          appbaropacity =
+              widget.sc.position.pixels <= firstH ? (scrolled * 0.75) / firstH : 0.75;
+        });
+      } else if (widget.sc.position.userScrollDirection == ScrollDirection.forward &&
+          (scrolled != 0 || widget.sc.position.pixels <= firstH)) {
+        // Handle scroll up.
+        setState(() {
+          scrolled = max(scrolled - max(lastscroll - widget.sc.position.pixels, 0), 0);
+          appbaropacity = widget.sc.position.pixels <= size.height * 0.075
+              ? (min(widget.sc.position.pixels, firstH) * 0.75) / firstH
+              : 0.75;
+        });
+      }
+
+      lastscroll = widget.sc.position.pixels;
+    });
+    super.initState();
+  }
+  
+  @override
+  Widget build(BuildContext context){
+  	print("AppBar rebuild");
+  	size = MediaQuery.of(context).size;
+  	//My App bar
+	return Positioned(
               height: size.height * 0.125 + MediaQuery.of(context).padding.top,
               width: size.width,
               top: scrolled * -1,
@@ -176,9 +260,7 @@ class _MainScreenState extends State<MainScreen> {
                               fontWeight: FontWeight.w400),
                         ),
                         TextButton(
-                            onPressed: () {
-                              showToast();
-                            },
+                            onPressed: widget.myfunc,
                             child: const Text(
                               "Catefories",
                               style: TextStyle(
@@ -191,88 +273,25 @@ class _MainScreenState extends State<MainScreen> {
                   )
                 ],
               ),
-            ),
-          ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.black,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey,
-          currentIndex: _index,
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.home_filled,
-                ),
-                label: "Home"),
-            BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.video_collection_outlined,
-                ),
-                label: "Comming Soon"),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.arrow_circle_down_outlined,
-              ),
-              label: "Downloads",
-            )
-          ],
-          onTap: (index) {
-            setState(() => _index = index);
-          },
-        ),
-      ),
-      Visibility(
-        visible: isVisible,
-        child: Container(
-            margin: const EdgeInsets.all(0),
-            child: ListView(
-                children: List.generate(
-                    cat.length,
-                    (index) => TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          cat[index],
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 20),
-                        )))),
-            decoration: BoxDecoration(
-              color: const Color(0x00000000)
-                  .withOpacity(0.8), //here i want to add opacity
-            )),
-      ),
-      Visibility(
-        visible: isVisible,
-        child: Padding(
-          padding: EdgeInsets.only(top: size.height * .9),
-          child: Center(
-            child: FloatingActionButton(
-              onPressed: () {
-                showToast();
-              },
-              child: const Icon(
-                Icons.clear,
-                color: Colors.black,
-              ),
-              backgroundColor: Colors.white,
-            ),
-          ),
-        ),
-      )
-    ]);
+            );
   }
 }
 
-class MainView extends StatelessWidget {
+class MainView extends StatefulWidget {
   const MainView({
     Key? key,
-    required this.size,
   }) : super(key: key);
+  
+  _MainViewState createState() => _MainViewState();
+}
 
-  final Size size;
+  class _MainViewState extends State<MainView> with AutomaticKeepAliveClientMixin {
 
   @override
   Widget build(BuildContext context) {
+    print("rebuild MainView");
+    Size size = MediaQuery.of(context).size;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       child: Stack(
@@ -360,15 +379,23 @@ class MainView extends StatelessWidget {
       ),
     );
   }
+  @override
+  bool get wantKeepAlive => true;
 }
 
-class CustLisView extends StatelessWidget {
+class CustLisView extends StatefulWidget {
   final String name;
 
   const CustLisView({Key? key, required this.name}) : super(key: key);
+  
+    _CustLisViewState createState() => _CustLisViewState();
+}
 
+  class _CustLisViewState extends State<CustLisView> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
+  
+    print("rebuild CustLisView");
     Size size = MediaQuery.of(context).size;
     List<Poster> children = [];
 
@@ -389,7 +416,7 @@ class CustLisView extends StatelessWidget {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
-                name,
+                widget.name,
                 style: const TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.bold,
@@ -407,4 +434,6 @@ class CustLisView extends StatelessWidget {
                   ))
             ])));
   }
+  @override
+  bool get wantKeepAlive => true;
 }

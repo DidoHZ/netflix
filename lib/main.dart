@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:netflix/screen/home_screen.dart';
-import 'package:netflix/screen/profilemainscreen.dart';
-import 'package:netflix/screen/signin_screen.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -21,8 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'NETFLIX',
-      theme: ThemeData(
-      ),
+      theme: ThemeData(),
       home: const MyHomePage(),
     );
   }
@@ -40,20 +36,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.black,
-        backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.white,size: 25)
-      ),
+          primaryColor: Colors.black,
+          backgroundColor: Colors.black,
+          iconTheme: const IconThemeData(color: Colors.white, size: 25)),
       title: "Netflix",
       debugShowCheckedModeBanner: false,
-      initialRoute: ScreenHome.rout,
-      routes: {
-        ScreenHome.rout : (context) => ScreenHome(),
-        SignInScreen.rout : (context) => SignInScreen(),
-        ProfileMainScreen.rout : (context) => ProfileMainScreen(),
-
-      },
+      home: const ScreenHome(),
     );
   }
-
 }

@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:netflix/widgets/poster.dart';
 
-
-
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
 
@@ -14,9 +12,47 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  ScrollController sc = ScrollController(keepScrollOffset: true);
+  ScrollController sc = ScrollController();
   double scrolled = 0, appbaropacity = 0, lastscroll = 0;
   int _index = 0;
+  late Size size;
+
+  @override
+  void initState() {
+    sc = ScrollController();
+    sc.addListener(() {
+      if (sc.position.pixels == sc.position.maxScrollExtent && i < cat.length) {
+        setState(() {
+          i += 4;
+        });
+      }
+
+      double firstH = size.height * 0.075;
+
+      if (sc.position.userScrollDirection == ScrollDirection.reverse &&
+          scrolled < firstH) {
+        // Handle scroll Down
+        setState(() {
+          scrolled =
+              min(scrolled + max(sc.position.pixels - lastscroll, 1), firstH);
+          appbaropacity =
+              sc.position.pixels <= firstH ? (scrolled * 0.75) / firstH : 0.75;
+        });
+      } else if (sc.position.userScrollDirection == ScrollDirection.forward &&
+          (scrolled != 0 || sc.position.pixels <= firstH)) {
+        // Handle scroll up.
+        setState(() {
+          scrolled = max(scrolled - max(lastscroll - sc.position.pixels, 0), 0);
+          appbaropacity = sc.position.pixels <= size.height * 0.075
+              ? (min(sc.position.pixels, firstH) * 0.75) / firstH
+              : 0.75;
+        });
+      }
+
+      lastscroll = sc.position.pixels;
+    });
+    super.initState();
+  }
 
   List<String> cat = [
     "Home",
@@ -48,11 +84,12 @@ class _MainScreenState extends State<MainScreen> {
       isVisible = !isVisible;
     });
   }
+
   int i = 4;
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
+    size = MediaQuery.of(context).size;
     return Stack(children: [
       Scaffold(
         backgroundColor: Colors.black,
@@ -61,62 +98,22 @@ class _MainScreenState extends State<MainScreen> {
         body: Stack(
           children: [
             //Body
-            NotificationListener(
-              child: Positioned(
-                height: size.height + MediaQuery.of(context).padding.top,
-                width: size.width,
-                top: MediaQuery.of(context).padding.top * -1,
-                child: ListView.builder(
-                  itemCount: min(i,cat.length + 1),
-                  itemBuilder: (context, index) {
-                    if (index == 0)
-                      return MainView(size: size);
-                    else
-                      return CustLisView(name: cat[index - 1]);
-                  },
-                  controller: sc,
-                ),
+            Positioned(
+              height: size.height + MediaQuery.of(context).padding.top,
+              width: size.width,
+              top: MediaQuery.of(context).padding.top * -1,
+              child: ListView.builder(
+                itemCount: min(i, cat.length + 1),
+                itemBuilder: (context, index) {
+                  if (index == 0)
+                    return MainView(size: size);
+                  else
+                    return CustLisView(name: cat[index - 1]);
+                },
+                controller: sc,
               ),
-/*
-              onNotification: (t) {
-                if (sc.position.pixels ==
-                    sc.position.maxScrollExtent) {print("add 4 widgets"); setState((){i += 4;});}
-
-                if (sc.position.userScrollDirection ==
-                    ScrollDirection.reverse && sc.position.pixels < size.height * 0.075) {
-                  setState(() {
-                    scrolled = min(
-                        scrolled + max(sc.position.pixels - lastscroll, 1),
-                        size.height * 0.075);
-                    appbaropacity = sc.position.pixels <= size.height * 0.075
-                        ? (scrolled * 0.5) / (size.height * 0.075)
-                        : 0.5;
-                    lastscroll = sc.position.pixels;
-                  });
-                } else if (sc.position.userScrollDirection ==
-                    ScrollDirection.forward && scrolled  != 0) {
-                  // Handle scroll up.
-                  setState(() {
-                    scrolled = max(
-                        scrolled - max(lastscroll - sc.position.pixels, 1), 0);
-                    appbaropacity = sc.position.pixels <= size.height * 0.075
-                        ? (min(sc.position.pixels, size.height * 0.075) * 0.5) /
-                            (size.height * 0.075)
-                        : appbaropacity;
-                    lastscroll = sc.position.pixels;
-                  });
-                }
-
-                if (t is ScrollEndNotification && t.metrics.pixels == 0) {
-                  appbaropacity = 0;
-                  scrolled = 0;
-                }
-
-                return false;
-              },
-
- */
             ),
+
             //My App bar
             Positioned(
               height: size.height * 0.125 + MediaQuery.of(context).padding.top,
@@ -134,7 +131,7 @@ class _MainScreenState extends State<MainScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.new_releases,
                           ),
                           Row(
@@ -164,14 +161,14 @@ class _MainScreenState extends State<MainScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text(
+                        const Text(
                           "Tv Shows",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w400),
                         ),
-                        Text(
+                        const Text(
                           "Movies",
                           style: TextStyle(
                               color: Colors.white,
@@ -182,7 +179,7 @@ class _MainScreenState extends State<MainScreen> {
                             onPressed: () {
                               showToast();
                             },
-                            child: Text(
+                            child: const Text(
                               "Catefories",
                               style: TextStyle(
                                   color: Colors.white,
@@ -228,7 +225,7 @@ class _MainScreenState extends State<MainScreen> {
       Visibility(
         visible: isVisible,
         child: Container(
-            margin: EdgeInsets.all(0),
+            margin: const EdgeInsets.all(0),
             child: ListView(
                 children: List.generate(
                     cat.length,
@@ -236,10 +233,11 @@ class _MainScreenState extends State<MainScreen> {
                         onPressed: () {},
                         child: Text(
                           cat[index],
-                          style: TextStyle(color: Colors.white, fontSize: 20),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 20),
                         )))),
-            decoration: new BoxDecoration(
-              color: const Color(0x000000)
+            decoration: BoxDecoration(
+              color: const Color(0x00000000)
                   .withOpacity(0.8), //here i want to add opacity
             )),
       ),
@@ -252,7 +250,7 @@ class _MainScreenState extends State<MainScreen> {
               onPressed: () {
                 showToast();
               },
-              child: Icon(
+              child: const Icon(
                 Icons.clear,
                 color: Colors.black,
               ),
@@ -276,10 +274,10 @@ class MainView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 20),
       child: Stack(
         children: [
-          Container(
+          SizedBox(
             height: size.height * 0.7,
             width: size.width,
             child: Image.network(
@@ -301,11 +299,11 @@ class MainView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
+                const Text(
                   "Drama, Action, Crime",
                   style: TextStyle(color: Colors.white),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Row(
@@ -317,7 +315,7 @@ class MainView extends StatelessWidget {
                           icon: const Icon(
                             Icons.add,
                           )),
-                      Text("My List",
+                      const Text("My List",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 8,
@@ -329,22 +327,25 @@ class MainView extends StatelessWidget {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(5),
                             color: Colors.white),
-                        child: MaterialButton(
-                          onPressed: () {},
-                          child: Row(
-                            children: [
-                              Icon(Icons.play_arrow, color: Colors.black),
-                              Text("Play")
-                            ],
-                          ),
-                        )),
+                        child: TextButton(
+                            onPressed: () {},
+                            child: Center(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: const [
+                                  Icon(Icons.play_arrow, color: Colors.black),
+                                  Text("Play")
+                                ],
+                              ),
+                            ))),
                     Column(children: [
                       IconButton(
                           onPressed: () {},
                           icon: const Icon(
                             Icons.info_outline_rounded,
                           )),
-                      Text("Info",
+                      const Text("Info",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 8,
@@ -361,29 +362,25 @@ class MainView extends StatelessWidget {
   }
 }
 
-class CustLisView extends StatefulWidget {
-  List<Poster> children = [];
-  String name;
+class CustLisView extends StatelessWidget {
+  final String name;
 
-  CustLisView({Key? key, required this.name}) : super(key: key);
+  const CustLisView({Key? key, required this.name}) : super(key: key);
 
-  @override
-  _CustLisViewState createState() => _CustLisViewState();
-}
-
-class _CustLisViewState extends State<CustLisView> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    List<Poster> children = [];
 
-    widget.children = List.generate(
+    children = List.generate(
         10,
-        (index) => Poster(
+        (index) => const Poster(
             image:
                 "https://i.pinimg.com/originals/af/34/1e/af341e79a94853eb03fb149f3cfbe509.jpg",
             title: "Peaky Blinders",
             description:
                 "Birmingham, England, in 1919, several months after the end of the First World War in November 1918. The story centres on the Peaky Blinders gang and their ambitious and highly cunning boss Tommy Shelby (Murphy)"));
+
     return Container(
         height: size.height * 0.25,
         margin: const EdgeInsets.symmetric(vertical: 10),
@@ -392,7 +389,7 @@ class _CustLisViewState extends State<CustLisView> {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
-                widget.name,
+                name,
                 style: const TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.bold,
@@ -401,12 +398,12 @@ class _CustLisViewState extends State<CustLisView> {
               const SizedBox(
                 height: 7,
               ),
-              Container(
+              SizedBox(
                   width: size.width,
                   height: size.height * .20,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    children: widget.children,
+                    children: children,
                   ))
             ])));
   }

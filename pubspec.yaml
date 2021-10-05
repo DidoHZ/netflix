@@ -32,7 +32,7 @@ dependencies:
   carousel_slider: ^4.0.0
   flutter_svg: 0.22.0
   video_player: ^2.2.5
-
+  
   # Check that you have this dependency (added in the previous step)
 
   # Add the dependency for the FlutterFire plugin for Google Analytics

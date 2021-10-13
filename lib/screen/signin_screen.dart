@@ -14,6 +14,7 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
+    print("Sign in rebuild");
     return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
@@ -33,7 +34,9 @@ class _SignInScreenState extends State<SignInScreen> {
               password: true,
             ),
             Container(
+              margin: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height * 0.01),
               width: MediaQuery.of(context).size.width * 0.9,
+              height: MediaQuery.of(context).size.height * 0.07,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(color: Colors.white, width: 1)),
